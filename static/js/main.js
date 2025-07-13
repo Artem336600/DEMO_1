@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const charCount = document.getElementById('charCount');
     const characterCounter = document.getElementById('characterCounter');
     
-    // Tags functionality
-    const addTagBtn = document.getElementById('addTagBtn');
-    const tagDropdown = document.getElementById('tagDropdown');
-    const tagsDisplay = document.getElementById('tagsDisplay');
-    const tagsContainer = document.getElementById('tagsContainer');
+    // Tags functionality (elements created dynamically after search)
+    const addTagBtn = document.getElementById('addTagBtn'); // Will be null initially
+    const tagDropdown = document.getElementById('tagDropdown'); // Will be null initially
+    const tagsDisplay = document.getElementById('tagsDisplay'); // Will be null initially
+    const tagsContainer = document.getElementById('tagsContainer'); // Will be null initially
     
     let activeTags = [];
     let requiredFields = [];
@@ -101,7 +101,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update tags display based on required fields
     function updateTagsDisplay() {
-        const tags = tagsDisplay.querySelectorAll('.tag');
+        const currentTagsDisplay = document.getElementById('tagsDisplay');
+        if (!currentTagsDisplay) {
+            console.log('tagsDisplay element not found - skipping update');
+            return;
+        }
+        
+        const tags = currentTagsDisplay.querySelectorAll('.tag');
         console.log('=== UPDATING TAGS DISPLAY ===');
         console.log('Current required fields:', requiredFields);
         console.log('Found tags:', tags.length);
@@ -136,6 +142,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add tag functionality
     function addTag(type, value, color) {
+        const currentTagsDisplay = document.getElementById('tagsDisplay');
+        const currentTagDropdown = document.getElementById('tagDropdown');
+        
+        if (!currentTagsDisplay) {
+            console.log('tagsDisplay element not found - cannot add tag');
+            return;
+        }
+        
         if (activeTags.find(tag => tag.type === type && tag.value === value)) {
             return; // Tag already exists
         }
@@ -157,11 +171,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <button class="tag-remove" onclick="removeTag(this)">×</button>
         `;
         
-        tagsDisplay.appendChild(tag);
+        currentTagsDisplay.appendChild(tag);
         activeTags.push({ type, value, color });
         
-        // Hide dropdown
-        tagDropdown.classList.remove('show');
+        // Hide dropdown if it exists
+        if (currentTagDropdown) {
+            currentTagDropdown.classList.remove('show');
+        }
     }
 
     // Remove tag functionality
@@ -225,28 +241,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Requirements analysis:', data.parsed.requirements);
                     
                     // Check if we have any tags to update
-                    const existingTags = tagsDisplay.querySelectorAll('.tag');
-                    console.log('Existing tags before update:', existingTags.length);
-                    console.log('tagsDisplay element:', tagsDisplay);
-                    console.log('All tags found:', existingTags);
-                    
-                    // Log each tag details
-                    existingTags.forEach((tag, index) => {
-                        console.log(`Tag ${index}:`, {
-                            element: tag,
-                            type: tag.dataset.type,
-                            text: tag.querySelector('span')?.textContent,
-                            classes: tag.className
+                    const currentTagsDisplay = document.getElementById('tagsDisplay');
+                    if (currentTagsDisplay) {
+                        const existingTags = currentTagsDisplay.querySelectorAll('.tag');
+                        console.log('Existing tags before update:', existingTags.length);
+                        console.log('tagsDisplay element:', currentTagsDisplay);
+                        console.log('All tags found:', existingTags);
+                        
+                        // Log each tag details
+                        existingTags.forEach((tag, index) => {
+                            console.log(`Tag ${index}:`, {
+                                element: tag,
+                                type: tag.dataset.type,
+                                text: tag.querySelector('span')?.textContent,
+                                classes: tag.className
+                            });
                         });
-                    });
-                    
-                    if (existingTags.length > 0) {
-                        console.log('Calling updateRequiredFieldsFromMistral...');
-                        updateRequiredFieldsFromMistral(data.parsed.requirements);
+                        
+                        if (existingTags.length > 0) {
+                            console.log('Calling updateRequiredFieldsFromMistral...');
+                            updateRequiredFieldsFromMistral(data.parsed.requirements);
+                        } else {
+                            console.log('No tags found - skipping tag update');
+                        }
                     } else {
-                        console.log('No tags found - skipping tag update');
-                        console.log('Checking if tagsDisplay exists:', !!tagsDisplay);
-                        console.log('tagsDisplay innerHTML:', tagsDisplay?.innerHTML);
+                        console.log('tagsDisplay element not found - skipping tag update');
                     }
                 } else {
                     console.log('No requirements found in parsed data');
