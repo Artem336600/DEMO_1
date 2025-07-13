@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header">
+    <div class="header-content">
+        <div class="brand-nav">Stroka</div>
+        <div class="header-icons">
+            <div class="header-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="header-icon notification-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="notification-badge">3</div>
+            </div>
+            <a href="{{ url_for('auth.register') }}" class="header-icon profile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="registration-wrapper">
+    <div class="registration-container">
+        <div class="registration-header">
+            <div class="step-indicator">
+                <div class="step completed">1</div>
+                <div class="step-line completed"></div>
+                <div class="step completed">2</div>
+                <div class="step-line completed"></div>
+                <div class="step active">3</div>
+                <div class="step-line"></div>
+                <div class="step">4</div>
+            </div>
+            <h1 class="registration-title">Шаг 3. Детальная информация</h1>
+            <p class="registration-subtitle">Укажите подробности по выбранной цели</p>
+        </div>
+
+        <form method="POST" class="registration-form">
+            <!-- Conditional questions for "find_people" -->
+            <div class="conditional-section" id="find_people_section" style="display: none;">
+                <h3>Поиск участников для проекта</h3>
+                
+                <div class="form-group">
+                    <label for="project_description">Описание проекта</label>
+                    <textarea id="project_description" name="project_description" placeholder="Кратко опишите суть проекта, его цели и задачи"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="looking_for">Требуемые компетенции</label>
+                    <div class="tag-input-container">
+                        <div class="tags-display" id="looking_for_tags"></div>
+                        <div class="tag-input-group">
+                            <input type="text" id="looking_for_input" placeholder="Введите компетенцию">
+                            <button type="button" class="add-tag-btn" onclick="addTag('looking_for')">Добавить</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="looking_for" id="looking_for_hidden">
+                </div>
+            </div>
+
+            <!-- Conditional questions for "join_project" -->
+            <div class="conditional-section" id="join_project_section" style="display: none;">
+                <h3>Участие в проектах</h3>
+                
+                <div class="form-group">
+                    <label for="what_to_do">Область деятельности</label>
+                    <div class="tag-input-container">
+                        <div class="tags-display" id="what_to_do_tags"></div>
+                        <div class="tag-input-group">
+                            <input type="text" id="what_to_do_input" placeholder="Введите область деятельности">
+                            <button type="button" class="add-tag-btn" onclick="addTag('what_to_do')">Добавить</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="what_to_do" id="what_to_do_hidden">
+                </div>
+
+                <div class="form-group">
+                    <label for="interests">Интересующие направления</label>
+                    <div class="tag-input-container">
+                        <div class="tags-display" id="interests_tags"></div>
+                        <div class="tag-input-group">
+                            <input type="text" id="interests_input" placeholder="Введите направление">
+                            <button type="button" class="add-tag-btn" onclick="addTag('interests')">Добавить</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="interests" id="interests_hidden">
+                </div>
+
+                <div class="form-group">
+                    <label>Готовность к участию (часов в неделю)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="time_commitment" value="<2h">
+                            <span class="checkbox-text">До 2 часов</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="time_commitment" value="2-5h">
+                            <span class="checkbox-text">2-5 часов</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="time_commitment" value="5-10h">
+                            <span class="checkbox-text">5-10 часов</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="time_commitment" value=">10h">
+                            <span class="checkbox-text">Более 10 часов</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conditional questions for "expand_network" -->
+            <div class="conditional-section expand-network-section" id="expand_network_section" style="display: none;">
+                <h3>Расширение контактов</h3>
+                
+                <div class="network-group">
+                    <div class="form-group">
+                        <label>Целевая аудитория</label>
+                        <div class="network-checkbox-group">
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="meet_with" value="interests">
+                                <span class="checkbox-text">Единомышленники по интересам</span>
+                            </label>
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="meet_with" value="other_faculties">
+                                <span class="checkbox-text">Студенты других факультетов</span>
+                            </label>
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="meet_with" value="potential_colleagues">
+                                <span class="checkbox-text">Потенциальные коллеги</span>
+                            </label>
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="meet_with" value="anyone">
+                                <span class="checkbox-text">Широкий круг контактов</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="network-group">
+                    <div class="form-group">
+                        <label>Предпочтительный формат взаимодействия</label>
+                        <div class="network-checkbox-group">
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="communication_format" value="online">
+                                <span class="checkbox-text">Онлайн-общение</span>
+                            </label>
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="communication_format" value="offline">
+                                <span class="checkbox-text">Личные встречи</span>
+                            </label>
+                            <label class="network-checkbox-option">
+                                <input type="checkbox" name="communication_format" value="any">
+                                <span class="checkbox-text">Любой формат</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="network-group">
+                    <div class="form-group">
+                        <label for="discuss_topics">Темы для обсуждения</label>
+                        <div class="tag-input-container">
+                            <div class="tags-display" id="discuss_topics_tags"></div>
+                            <div class="tag-input-group">
+                                <input type="text" id="discuss_topics_input" placeholder="Введите тему для обсуждения">
+                                <button type="button" class="add-tag-btn" onclick="addTag('discuss_topics')">Добавить</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="discuss_topics" id="discuss_topics_hidden">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Продолжить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get purpose from Flask session
+    const purpose = '{{ session.get("step2_data", {}).get("purpose", "") }}';
+    
+    console.log('Purpose from session:', purpose); // Debug info
+    
+    if (purpose) {
+        const targetSection = document.getElementById(purpose + '_section');
+        console.log('Target section:', targetSection); // Debug info
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            console.log('Showing section for purpose:', purpose); // Debug info
+        } else {
+            console.log('No section found for purpose:', purpose); // Debug info
+        }
+    } else {
+        console.log('No purpose found in session'); // Debug info
+    }
+});
+
+function addTag(fieldName) {
+    const input = document.getElementById(fieldName + '_input');
+    const tagsDisplay = document.getElementById(fieldName + '_tags');
+    const hiddenInput = document.getElementById(fieldName + '_hidden');
+    
+    const value = input.value.trim();
+    if (!value) return;
+    
+    // Create tag element
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `
+        <span>${value}</span>
+        <button type="button" class="remove-tag-btn" onclick="removeTag(this, '${fieldName}')">×</button>
+    `;
+    
+    tagsDisplay.appendChild(tag);
+    input.value = '';
+    
+    // Update hidden input
+    updateHiddenInput(fieldName);
+}
+
+function removeTag(button, fieldName) {
+    button.parentElement.remove();
+    updateHiddenInput(fieldName);
+}
+
+function updateHiddenInput(fieldName) {
+    const tagsDisplay = document.getElementById(fieldName + '_tags');
+    const hiddenInput = document.getElementById(fieldName + '_hidden');
+    
+    const tags = Array.from(tagsDisplay.querySelectorAll('.tag span')).map(span => span.textContent);
+    hiddenInput.value = tags.join(',');
+}
+
+// Allow adding tags by pressing Enter
+document.addEventListener('keypress', function(e) {
+    if (e.target.parentElement && e.target.parentElement.classList.contains('tag-input-group')) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const input = e.target;
+            const fieldName = input.id.replace('_input', '');
+            addTag(fieldName);
+        }
+    }
+});
+</script>
+{% endblock %} 

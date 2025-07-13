@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header">
+    <div class="header-content">
+        <div class="brand-nav">Stroka</div>
+        <div class="header-icons">
+            <div class="header-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="header-icon notification-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="notification-badge">3</div>
+            </div>
+            <a href="{{ url_for('auth.register') }}" class="header-icon profile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="registration-wrapper">
+    <div class="registration-container">
+        <div class="registration-header">
+            <div class="step-indicator">
+                <div class="step active">1</div>
+                <div class="step-line"></div>
+                <div class="step">2</div>
+                <div class="step-line"></div>
+                <div class="step">3</div>
+                <div class="step-line"></div>
+                <div class="step">4</div>
+            </div>
+            <h1 class="registration-title">Шаг 1. Основная информация</h1>
+            <p class="registration-subtitle">Заполните базовые данные профиля</p>
+        </div>
+
+        <form method="POST" class="registration-form">
+            <div class="form-section">
+                <h3>Обязательные поля</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="full_name">Полное имя</label>
+                        <input type="text" id="full_name" name="full_name" placeholder="Иванов Иван Иванович" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="faculty">Факультет</label>
+                        <select id="faculty" name="faculty" required>
+                            <option value="">Выберите факультет</option>
+                            <option value="ИУ">ИУ</option>
+                            <option value="ИБМ">ИБМ</option>
+                            <option value="МТ">МТ</option>
+                            <option value="СМ">СМ</option>
+                            <option value="БМТ">БМТ</option>
+                            <option value="РЛ">РЛ</option>
+                            <option value="Э">Э</option>
+                            <option value="РК">РК</option>
+                            <option value="ФН">ФН</option>
+                            <option value="Л">Л</option>
+                            <option value="ЮР">ЮР</option>
+                            <option value="СГН">СГН</option>
+                            <option value="ВУЦ">ВУЦ</option>
+                            <option value="ГУИМЦ">ГУИМЦ</option>
+                            <option value="ФОФ">ФОФ</option>
+                            <option value="ИСОТ">ИСОТ</option>
+                            <option value="МТКП">МТКП</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course">Курс</label>
+                        <select id="course" name="course" required>
+                            <option value="">Выберите курс</option>
+                            <option value="1">1 курс</option>
+                            <option value="2">2 курс</option>
+                            <option value="3">3 курс</option>
+                            <option value="4">4 курс</option>
+                            <option value="5">5 курс</option>
+                            <option value="6">6 курс</option>
+                            <option value="Магистратура">Магистратура</option>
+                            <option value="Аспирантура">Аспирантура</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="group">Группа</label>
+                        <input type="text" id="group" name="group" placeholder="Например: 24Б" required>
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="telegram">Telegram</label>
+                        <input type="text" id="telegram" name="telegram" placeholder="@username" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Дополнительная информация</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="github">GitHub (необязательно)</label>
+                        <input type="url" id="github" name="github" placeholder="https://github.com/username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="portfolio">Портфолио (необязательно)</label>
+                        <input type="url" id="portfolio" name="portfolio" placeholder="https://yourportfolio.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo">Фото профиля</label>
+                        <input type="file" id="photo" name="photo" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Продолжить</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 
