@@ -1,4 +1,5 @@
 -- Создание enum для типов пользователей
+DROP TYPE IF EXISTS user_type_enum CASCADE;
 CREATE TYPE user_type_enum AS ENUM (
     'project_creator',    -- Поиск участников для проекта
     'project_participant', -- Участие в существующих проектах
@@ -30,6 +31,7 @@ CREATE TABLE find_people_data (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     project_description TEXT,
     looking_for TEXT, -- comma-separated tags
+    required_skills TEXT, -- comma-separated skills
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -39,6 +41,7 @@ CREATE TABLE join_project_data (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     what_to_do TEXT, -- comma-separated tags
     interests TEXT, -- comma-separated tags
+    my_skills TEXT, -- comma-separated skills
     time_commitment TEXT[], -- array of time commitments
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -91,4 +94,66 @@ $$ language 'plpgsql';
 
 -- Создание триггера для автоматического обновления updated_at
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Таблицы для отслеживания свободного ввода пользователей
+-- Таблица для отслеживания навыков/компетенций
+CREATE TABLE user_skills_input (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    skill_name VARCHAR(255) NOT NULL,
+    input_context VARCHAR(50) NOT NULL, -- 'looking_for', 'what_to_do', 'interests', 'required_skills', 'my_skills'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Таблица для отслеживания тем для обсуждения
+CREATE TABLE user_topics_input (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    topic_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Таблица для отслеживания описаний проектов
+CREATE TABLE project_descriptions_input (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Таблица для отслеживания описаний "о себе"
+CREATE TABLE about_descriptions_input (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Индексы для аналитики
+CREATE INDEX idx_user_skills_input_skill_name ON user_skills_input(skill_name);
+CREATE INDEX idx_user_skills_input_context ON user_skills_input(input_context);
+CREATE INDEX idx_user_skills_input_created_at ON user_skills_input(created_at);
+CREATE INDEX idx_user_topics_input_topic_name ON user_topics_input(topic_name);
+CREATE INDEX idx_user_topics_input_created_at ON user_topics_input(created_at);
+CREATE INDEX idx_project_descriptions_input_created_at ON project_descriptions_input(created_at);
+CREATE INDEX idx_about_descriptions_input_created_at ON about_descriptions_input(created_at);
+
+-- RLS для новых таблиц
+ALTER TABLE user_skills_input ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_topics_input ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_descriptions_input ENABLE ROW LEVEL SECURITY;
+ALTER TABLE about_descriptions_input ENABLE ROW LEVEL SECURITY;
+
+-- Политики безопасности для новых таблиц
+CREATE POLICY "Admin can view all skills input" ON user_skills_input FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own skills input" ON user_skills_input FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admin can view all topics input" ON user_topics_input FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own topics input" ON user_topics_input FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admin can view all project descriptions input" ON project_descriptions_input FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own project descriptions input" ON project_descriptions_input FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admin can view all about descriptions input" ON about_descriptions_input FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own about descriptions input" ON about_descriptions_input FOR INSERT WITH CHECK (true); 

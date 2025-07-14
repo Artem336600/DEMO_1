@@ -51,6 +51,7 @@
                 <div class="form-group">
                     <label for="project_description">Описание проекта</label>
                     <textarea id="project_description" name="project_description" placeholder="Кратко опишите суть проекта, его цели и задачи"></textarea>
+                    <div class="form-hint">Опишите идею, цель проекта и что планируете создать. Это поможет найти подходящих участников.</div>
                 </div>
 
                 <div class="form-group">
@@ -63,6 +64,20 @@
                         </div>
                     </div>
                     <input type="hidden" name="looking_for" id="looking_for_hidden">
+                    <div class="form-hint">Укажите навыки и роли, которые нужны для проекта: программист, дизайнер, маркетолог, аналитик и т.д.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="required_skills">Необходимые навыки</label>
+                    <div class="tag-input-container">
+                        <div class="tags-display" id="required_skills_tags"></div>
+                        <div class="tag-input-group">
+                            <input type="text" id="required_skills_input" placeholder="Введите навык">
+                            <button type="button" class="add-tag-btn" onclick="addTag('required_skills')">Добавить</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="required_skills" id="required_skills_hidden">
+                    <div class="form-hint">Укажите конкретные технические навыки: HTML, CSS, JavaScript, Python, Figma, Adobe Photoshop и т.д.</div>
                 </div>
             </div>
 
@@ -80,6 +95,7 @@
                         </div>
                     </div>
                     <input type="hidden" name="what_to_do" id="what_to_do_hidden">
+                    <div class="form-hint">Укажите, в каких сферах вы хотите участвовать: разработка, дизайн, маркетинг, аналитика, менеджмент и т.д.</div>
                 </div>
 
                 <div class="form-group">
@@ -92,6 +108,20 @@
                         </div>
                     </div>
                     <input type="hidden" name="interests" id="interests_hidden">
+                    <div class="form-hint">Укажите тематики проектов, которые вас интересуют: веб-разработка, мобильные приложения, ИИ, игры, стартапы и т.д.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="my_skills">Мои навыки</label>
+                    <div class="tag-input-container">
+                        <div class="tags-display" id="my_skills_tags"></div>
+                        <div class="tag-input-group">
+                            <input type="text" id="my_skills_input" placeholder="Введите навык">
+                            <button type="button" class="add-tag-btn" onclick="addTag('my_skills')">Добавить</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="my_skills" id="my_skills_hidden">
+                    <div class="form-hint">Укажите ваши технические навыки: HTML, CSS, JavaScript, Python, Figma, Adobe Photoshop и т.д.</div>
                 </div>
 
                 <div class="form-group">
@@ -114,6 +144,7 @@
                             <span class="checkbox-text">Более 10 часов</span>
                         </label>
                     </div>
+                    <div class="form-hint">Выберите, сколько времени в неделю вы готовы уделять проектам. Можно выбрать несколько вариантов.</div>
                 </div>
             </div>
 
@@ -142,6 +173,7 @@
                                 <span class="checkbox-text">Широкий круг контактов</span>
                             </label>
                         </div>
+                        <div class="form-hint">Выберите, с кем вы хотели бы познакомиться и расширить свою профессиональную сеть.</div>
                     </div>
                 </div>
 
@@ -162,6 +194,7 @@
                                 <span class="checkbox-text">Любой формат</span>
                             </label>
                         </div>
+                        <div class="form-hint">Укажите, как вам удобнее общаться: через интернет, лично встречаться или без разницы.</div>
                     </div>
                 </div>
 
@@ -176,6 +209,7 @@
                             </div>
                         </div>
                         <input type="hidden" name="discuss_topics" id="discuss_topics_hidden">
+                        <div class="form-hint">Укажите темы, которые вас интересуют для обсуждения: технологии, карьера, хобби, учеба и т.д.</div>
                     </div>
                 </div>
             </div>

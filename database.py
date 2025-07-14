@@ -17,6 +17,122 @@ class DatabaseManager:
         }
         return purpose_to_type.get(purpose, 'explorer')
     
+    def _save_find_people_data(self, user_id, data):
+        """Сохранение данных для поиска участников"""
+        insert_data = {
+            'user_id': user_id,
+            'project_description': data.get('project_description'),
+            'looking_for': data.get('looking_for'),
+            'required_skills': data.get('required_skills')
+        }
+        
+        result = self.supabase.table('find_people_data').insert(insert_data).execute()
+        if not result.data:
+            raise Exception("Ошибка при сохранении данных поиска участников")
+        
+        # Сохранение данных для аналитики
+        self._save_project_description_input(user_id, data.get('project_description'))
+        self._save_skills_input(user_id, data.get('looking_for'), 'looking_for')
+        self._save_skills_input(user_id, data.get('required_skills'), 'required_skills')
+    
+    def _save_join_project_data(self, user_id, data):
+        """Сохранение данных для участия в проектах"""
+        insert_data = {
+            'user_id': user_id,
+            'what_to_do': data.get('what_to_do'),
+            'interests': data.get('interests'),
+            'my_skills': data.get('my_skills'),
+            'time_commitment': data.get('time_commitment', [])
+        }
+        
+        result = self.supabase.table('join_project_data').insert(insert_data).execute()
+        if not result.data:
+            raise Exception("Ошибка при сохранении данных участия в проектах")
+        
+        # Сохранение данных для аналитики
+        self._save_skills_input(user_id, data.get('what_to_do'), 'what_to_do')
+        self._save_skills_input(user_id, data.get('interests'), 'interests')
+        self._save_skills_input(user_id, data.get('my_skills'), 'my_skills')
+    
+    def _save_expand_network_data(self, user_id, data):
+        """Сохранение данных для расширения сети"""
+        insert_data = {
+            'user_id': user_id,
+            'meet_with': data.get('meet_with', []),
+            'communication_format': data.get('communication_format', []),
+            'discuss_topics': data.get('discuss_topics')
+        }
+        
+        result = self.supabase.table('expand_network_data').insert(insert_data).execute()
+        if not result.data:
+            raise Exception("Ошибка при сохранении данных расширения сети")
+        
+        # Сохранение данных для аналитики
+        self._save_topics_input(user_id, data.get('discuss_topics'))
+    
+    def _save_skills_input(self, user_id, skills_string, context):
+        """Сохранение навыков/компетенций в таблицу аналитики"""
+        if not skills_string:
+            return
+            
+        skills = [skill.strip() for skill in skills_string.split(',') if skill.strip()]
+        
+        for skill in skills:
+            try:
+                insert_data = {
+                    'user_id': user_id,
+                    'skill_name': skill,
+                    'input_context': context
+                }
+                self.supabase.table('user_skills_input').insert(insert_data).execute()
+            except Exception as e:
+                print(f"Ошибка при сохранении навыка '{skill}': {str(e)}")
+    
+    def _save_topics_input(self, user_id, topics_string):
+        """Сохранение тем для обсуждения в таблицу аналитики"""
+        if not topics_string:
+            return
+            
+        topics = [topic.strip() for topic in topics_string.split(',') if topic.strip()]
+        
+        for topic in topics:
+            try:
+                insert_data = {
+                    'user_id': user_id,
+                    'topic_name': topic
+                }
+                self.supabase.table('user_topics_input').insert(insert_data).execute()
+            except Exception as e:
+                print(f"Ошибка при сохранении темы '{topic}': {str(e)}")
+    
+    def _save_project_description_input(self, user_id, description):
+        """Сохранение описания проекта в таблицу аналитики"""
+        if not description:
+            return
+            
+        try:
+            insert_data = {
+                'user_id': user_id,
+                'description': description
+            }
+            self.supabase.table('project_descriptions_input').insert(insert_data).execute()
+        except Exception as e:
+            print(f"Ошибка при сохранении описания проекта: {str(e)}")
+    
+    def _save_about_description_input(self, user_id, description):
+        """Сохранение описания 'о себе' в таблицу аналитики"""
+        if not description:
+            return
+            
+        try:
+            insert_data = {
+                'user_id': user_id,
+                'description': description
+            }
+            self.supabase.table('about_descriptions_input').insert(insert_data).execute()
+        except Exception as e:
+            print(f"Ошибка при сохранении описания 'о себе': {str(e)}")
+    
     def save_user_registration(self, user_data, step3_data=None, about=None):
         """Сохранение полной регистрации пользователя"""
         try:
@@ -46,6 +162,9 @@ class DatabaseManager:
             
             user_id = user_result.data[0]['id']
             
+            # Сохранение описания "о себе" для аналитики
+            self._save_about_description_input(user_id, about)
+            
             # Сохранение дополнительных данных в зависимости от цели
             if step3_data:
                 purpose = user_data['purpose']
@@ -62,44 +181,6 @@ class DatabaseManager:
         except Exception as e:
             print(f"Ошибка при сохранении регистрации: {str(e)}")
             raise e
-    
-    def _save_find_people_data(self, user_id, data):
-        """Сохранение данных для поиска участников"""
-        insert_data = {
-            'user_id': user_id,
-            'project_description': data.get('project_description'),
-            'looking_for': data.get('looking_for')
-        }
-        
-        result = self.supabase.table('find_people_data').insert(insert_data).execute()
-        if not result.data:
-            raise Exception("Ошибка при сохранении данных поиска участников")
-    
-    def _save_join_project_data(self, user_id, data):
-        """Сохранение данных для участия в проектах"""
-        insert_data = {
-            'user_id': user_id,
-            'what_to_do': data.get('what_to_do'),
-            'interests': data.get('interests'),
-            'time_commitment': data.get('time_commitment', [])
-        }
-        
-        result = self.supabase.table('join_project_data').insert(insert_data).execute()
-        if not result.data:
-            raise Exception("Ошибка при сохранении данных участия в проектах")
-    
-    def _save_expand_network_data(self, user_id, data):
-        """Сохранение данных для расширения сети"""
-        insert_data = {
-            'user_id': user_id,
-            'meet_with': data.get('meet_with', []),
-            'communication_format': data.get('communication_format', []),
-            'discuss_topics': data.get('discuss_topics')
-        }
-        
-        result = self.supabase.table('expand_network_data').insert(insert_data).execute()
-        if not result.data:
-            raise Exception("Ошибка при сохранении данных расширения сети")
     
     def get_user_by_id(self, user_id):
         """Получение пользователя по ID"""
@@ -236,78 +317,170 @@ class DatabaseManager:
             return []
     
     def _filter_by_skills(self, users, skills):
-        """Фильтрует пользователей по навыкам из дополнительных таблиц"""
+        """Фильтрация пользователей по навыкам"""
         if not skills:
             return users
         
         filtered_users = []
-        skills_lower = [skill.lower() for skill in skills]
-        
         for user in users:
-            user_id = user['id']
-            purpose = user['purpose']
+            user_skills = []
             
-            # Проверяем навыки в зависимости от типа пользователя
-            has_matching_skills = False
-            
-            try:
-                if purpose == 'find_people':
-                    # Ищем в looking_for
-                    result = self.supabase.table('find_people_data').select('looking_for').eq('user_id', user_id).execute()
-                    if result.data:
-                        looking_for = result.data[0].get('looking_for', '')
-                        if looking_for:
-                            user_skills = [skill.strip().lower() for skill in looking_for.split(',')]
-                            has_matching_skills = any(
-                                any(search_skill in user_skill for search_skill in skills_lower)
-                                for user_skill in user_skills
-                            )
-                
-                elif purpose == 'join_project':
-                    # Ищем в what_to_do и interests
-                    result = self.supabase.table('join_project_data').select('what_to_do, interests').eq('user_id', user_id).execute()
-                    if result.data:
-                        data = result.data[0]
-                        what_to_do = data.get('what_to_do', '')
-                        interests = data.get('interests', '')
-                        
-                        all_skills = []
-                        if what_to_do:
-                            all_skills.extend([skill.strip().lower() for skill in what_to_do.split(',')])
-                        if interests:
-                            all_skills.extend([skill.strip().lower() for skill in interests.split(',')])
-                        
-                        has_matching_skills = any(
-                            any(search_skill in user_skill for search_skill in skills_lower)
-                            for user_skill in all_skills
-                        )
-                
-                elif purpose == 'expand_network':
-                    # Ищем в discuss_topics
-                    result = self.supabase.table('expand_network_data').select('discuss_topics').eq('user_id', user_id).execute()
-                    if result.data:
-                        discuss_topics = result.data[0].get('discuss_topics', '')
-                        if discuss_topics:
-                            user_topics = [topic.strip().lower() for topic in discuss_topics.split(',')]
-                            has_matching_skills = any(
-                                any(search_skill in user_topic for search_skill in skills_lower)
-                                for user_topic in user_topics
-                            )
-                
-                # Также проверяем в описании about
-                about = user.get('about', '')
-                if about and not has_matching_skills:
-                    about_lower = about.lower()
-                    has_matching_skills = any(skill in about_lower for skill in skills_lower)
-                
-                if has_matching_skills:
-                    filtered_users.append(user)
+            # Получение навыков из разных источников в зависимости от типа пользователя
+            if user.get('purpose') == 'find_people':
+                # Для создателей проектов ищем в looking_for и required_skills
+                find_data = self.supabase.table('find_people_data').select('looking_for, required_skills').eq('user_id', user['id']).execute()
+                if find_data.data:
+                    user_skills.extend(find_data.data[0].get('looking_for', '').split(','))
+                    user_skills.extend(find_data.data[0].get('required_skills', '').split(','))
                     
-            except Exception as e:
-                print(f"Ошибка при фильтрации по навыкам для пользователя {user_id}: {str(e)}")
-                continue
+            elif user.get('purpose') == 'join_project':
+                # Для участников проектов ищем в what_to_do, interests и my_skills
+                join_data = self.supabase.table('join_project_data').select('what_to_do, interests, my_skills').eq('user_id', user['id']).execute()
+                if join_data.data:
+                    user_skills.extend(join_data.data[0].get('what_to_do', '').split(','))
+                    user_skills.extend(join_data.data[0].get('interests', '').split(','))
+                    user_skills.extend(join_data.data[0].get('my_skills', '').split(','))
+            
+            # Очистка и нормализация навыков
+            user_skills = [skill.strip().lower() for skill in user_skills if skill.strip()]
+            skills_lower = [skill.lower() for skill in skills]
+            
+            # Проверка пересечения навыков
+            if any(skill in user_skills for skill in skills_lower):
+                filtered_users.append(user)
         
         return filtered_users
+    
+    # Методы для получения аналитики пользовательского ввода
+    def get_popular_skills(self, context=None, limit=50):
+        """Получение популярных навыков/компетенций"""
+        try:
+            query = self.supabase.table('user_skills_input').select('skill_name, input_context')
+            
+            if context:
+                query = query.eq('input_context', context)
+            
+            result = query.execute()
+            
+            if not result.data:
+                return []
+            
+            # Подсчет популярности
+            skill_counts = {}
+            for record in result.data:
+                skill = record['skill_name'].lower().strip()
+                if skill:
+                    skill_counts[skill] = skill_counts.get(skill, 0) + 1
+            
+            # Сортировка по популярности
+            popular_skills = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)
+            return popular_skills[:limit]
+            
+        except Exception as e:
+            print(f"Ошибка при получении популярных навыков: {str(e)}")
+            return []
+    
+    def get_popular_topics(self, limit=30):
+        """Получение популярных тем для обсуждения"""
+        try:
+            result = self.supabase.table('user_topics_input').select('topic_name').execute()
+            
+            if not result.data:
+                return []
+            
+            # Подсчет популярности
+            topic_counts = {}
+            for record in result.data:
+                topic = record['topic_name'].lower().strip()
+                if topic:
+                    topic_counts[topic] = topic_counts.get(topic, 0) + 1
+            
+            # Сортировка по популярности
+            popular_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
+            return popular_topics[:limit]
+            
+        except Exception as e:
+            print(f"Ошибка при получении популярных тем: {str(e)}")
+            return []
+    
+    def get_skills_by_context(self, context, limit=30):
+        """Получение навыков по контексту (looking_for, what_to_do, interests, required_skills, my_skills)"""
+        try:
+            result = self.supabase.table('user_skills_input').select('skill_name').eq('input_context', context).execute()
+            
+            if not result.data:
+                return []
+            
+            # Подсчет популярности
+            skill_counts = {}
+            for record in result.data:
+                skill = record['skill_name'].lower().strip()
+                if skill:
+                    skill_counts[skill] = skill_counts.get(skill, 0) + 1
+            
+            # Сортировка по популярности
+            popular_skills = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)
+            return popular_skills[:limit]
+            
+        except Exception as e:
+            print(f"Ошибка при получении навыков по контексту: {str(e)}")
+            return []
+    
+    def get_project_descriptions_analysis(self, limit=100):
+        """Получение описаний проектов для анализа"""
+        try:
+            result = self.supabase.table('project_descriptions_input').select('description, created_at').order('created_at', desc=True).limit(limit).execute()
+            return result.data if result.data else []
+            
+        except Exception as e:
+            print(f"Ошибка при получении описаний проектов: {str(e)}")
+            return []
+    
+    def get_about_descriptions_analysis(self, limit=100):
+        """Получение описаний 'о себе' для анализа"""
+        try:
+            result = self.supabase.table('about_descriptions_input').select('description, created_at').order('created_at', desc=True).limit(limit).execute()
+            return result.data if result.data else []
+            
+        except Exception as e:
+            print(f"Ошибка при получении описаний 'о себе': {str(e)}")
+            return []
+    
+    def get_user_input_statistics(self):
+        """Получение статистики пользовательского ввода"""
+        try:
+            stats = {}
+            
+            # Статистика навыков
+            skills_result = self.supabase.table('user_skills_input').select('input_context').execute()
+            if skills_result.data:
+                context_counts = {}
+                for record in skills_result.data:
+                    context = record['input_context']
+                    context_counts[context] = context_counts.get(context, 0) + 1
+                stats['skills_by_context'] = context_counts
+                stats['total_skills'] = len(skills_result.data)
+            
+            # Статистика тем
+            topics_result = self.supabase.table('user_topics_input').select('*').execute()
+            if topics_result.data:
+                stats['total_topics'] = len(topics_result.data)
+            
+            # Статистика описаний проектов
+            projects_result = self.supabase.table('project_descriptions_input').select('*').execute()
+            if projects_result.data:
+                stats['total_project_descriptions'] = len(projects_result.data)
+            
+            # Статистика описаний "о себе"
+            about_result = self.supabase.table('about_descriptions_input').select('*').execute()
+            if about_result.data:
+                stats['total_about_descriptions'] = len(about_result.data)
+            
+            return stats
+            
+        except Exception as e:
+            print(f"Ошибка при получении статистики: {str(e)}")
+            return {}
 
 # Глобальный экземпляр для использования в приложении
 db = DatabaseManager() 

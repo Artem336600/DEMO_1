@@ -210,7 +210,6 @@ function initSearch() {
         // Helper function to get requirement status
         function getRequirementStatus(fieldType, requirements) {
             const fieldMapping = {
-                'skill': 'навыки',
                 'course': 'курс',
                 'user_type': 'тип пользователя',
                 'faculty': 'факультет',
@@ -231,7 +230,6 @@ function initSearch() {
         // Helper function to get requirement class
         function getRequirementClass(fieldType, requirements) {
             const fieldMapping = {
-                'skill': 'навыки',
                 'course': 'курс',
                 'user_type': 'тип пользователя',
                 'faculty': 'факультет',
@@ -260,15 +258,48 @@ function initSearch() {
         html += '<div class="compact-tags">';
         html += '<div class="tags-row">';
         
-        // Skills tags (blue)
-        if (parsed.skills && parsed.skills.length > 0) {
+        // Collect all tags with their status and data
+        const allTags = [];
+        
+        // Skills tags (blue) - now with individual status
+        if (parsed.skills_with_status && parsed.skills_with_status.length > 0) {
+            parsed.skills_with_status.forEach((skillObj, originalIndex) => {
+                let skill = skillObj.навык || skillObj.skill || skillObj;
+                let status = skillObj.статус || skillObj.status || 'optional';
+                let score = skillObj.баллы || skillObj.score || null;
+                
+                const statusClass = (status === 'required') ? 'required' : 'optional';
+                
+                let scoreDisplay = '';
+                if (status === 'optional' && score) {
+                    scoreDisplay = `<span class="skill-score" onclick="editScore(this, ${originalIndex})">${score}</span>`;
+                }
+                
+                allTags.push({
+                    html: `<div class="compact-tag skill-tag ${statusClass}" data-type="skill" data-index="${originalIndex}" data-score="${score || ''}">
+                        <span class="tag-text" contenteditable="true">${skill}</span>
+                        ${scoreDisplay}
+                        <button class="remove-tag" onclick="removeTag(this)">×</button>
+                    </div>`,
+                    status: status,
+                    type: 'skill'
+                });
+            });
+        } else if (parsed.skills && parsed.skills.length > 0) {
+            // Fallback для старого формата
             parsed.skills.forEach((skill, index) => {
                 const statusText = getRequirementStatus('skill', parsed.requirements);
                 const statusClass = getRequirementClass('skill', parsed.requirements);
-                html += `<div class="compact-tag skill-tag ${statusClass}" data-type="skill" data-index="${index}">
-                    <span class="tag-text" contenteditable="true">${skill}${statusText}</span>
-                    <button class="remove-tag" onclick="removeTag(this)">×</button>
-                </div>`;
+                const status = statusClass === 'required' ? 'required' : 'optional';
+                
+                allTags.push({
+                    html: `<div class="compact-tag skill-tag ${statusClass}" data-type="skill" data-index="${index}">
+                        <span class="tag-text" contenteditable="true">${skill}${statusText}</span>
+                        <button class="remove-tag" onclick="removeTag(this)">×</button>
+                    </div>`,
+                    status: status,
+                    type: 'skill'
+                });
             });
         }
         
@@ -276,42 +307,78 @@ function initSearch() {
         if (parsed.course) {
             const statusText = getRequirementStatus('course', parsed.requirements);
             const statusClass = getRequirementClass('course', parsed.requirements);
-            html += `<div class="compact-tag course-tag ${statusClass}" data-type="course">
-                <span class="tag-text" contenteditable="true">${parsed.course}${statusText}</span>
-                <button class="remove-tag" onclick="removeTag(this)">×</button>
-            </div>`;
+            const status = statusClass === 'required' ? 'required' : 'optional';
+            
+            allTags.push({
+                html: `<div class="compact-tag course-tag ${statusClass}" data-type="course">
+                    <span class="tag-text" contenteditable="true">${parsed.course}${statusText}</span>
+                    <button class="remove-tag" onclick="removeTag(this)">×</button>
+                </div>`,
+                status: status,
+                type: 'course'
+            });
         }
         
         // User type tag (purple)
         if (parsed.user_type) {
             const statusText = getRequirementStatus('user_type', parsed.requirements);
             const statusClass = getRequirementClass('user_type', parsed.requirements);
-            html += `<div class="compact-tag user-type-tag ${statusClass}" data-type="user_type">
-                <span class="tag-text" contenteditable="true">${parsed.user_type}${statusText}</span>
-                <button class="remove-tag" onclick="removeTag(this)">×</button>
-            </div>`;
+            const status = statusClass === 'required' ? 'required' : 'optional';
+            
+            allTags.push({
+                html: `<div class="compact-tag user-type-tag ${statusClass}" data-type="user_type">
+                    <span class="tag-text" contenteditable="true">${parsed.user_type}${statusText}</span>
+                    <button class="remove-tag" onclick="removeTag(this)">×</button>
+                </div>`,
+                status: status,
+                type: 'user_type'
+            });
         }
         
         // Faculty tag (orange)
         if (parsed.faculty) {
             const statusText = getRequirementStatus('faculty', parsed.requirements);
             const statusClass = getRequirementClass('faculty', parsed.requirements);
-            html += `<div class="compact-tag faculty-tag ${statusClass}" data-type="faculty">
-                <span class="tag-text" contenteditable="true">${parsed.faculty}${statusText}</span>
-                <button class="remove-tag" onclick="removeTag(this)">×</button>
-            </div>`;
+            const status = statusClass === 'required' ? 'required' : 'optional';
+            
+            allTags.push({
+                html: `<div class="compact-tag faculty-tag ${statusClass}" data-type="faculty">
+                    <span class="tag-text" contenteditable="true">${parsed.faculty}${statusText}</span>
+                    <button class="remove-tag" onclick="removeTag(this)">×</button>
+                </div>`,
+                status: status,
+                type: 'faculty'
+            });
         }
         
         // Group tag (red)
         if (parsed.group) {
             const statusText = getRequirementStatus('group', parsed.requirements);
             const statusClass = getRequirementClass('group', parsed.requirements);
-            html += `<div class="compact-tag group-tag ${statusClass}" data-type="group">
-                <span class="tag-text" contenteditable="true">${parsed.group}${statusText}</span>
-                <button class="remove-tag" onclick="removeTag(this)">×</button>
-            </div>`;
+            const status = statusClass === 'required' ? 'required' : 'optional';
+            
+            allTags.push({
+                html: `<div class="compact-tag group-tag ${statusClass}" data-type="group">
+                    <span class="tag-text" contenteditable="true">${parsed.group}${statusText}</span>
+                    <button class="remove-tag" onclick="removeTag(this)">×</button>
+                </div>`,
+                status: status,
+                type: 'group'
+            });
         }
-
+        
+        // Sort all tags: required first, then optional
+        allTags.sort((a, b) => {
+            if (a.status === 'required' && b.status !== 'required') return -1;
+            if (a.status !== 'required' && b.status === 'required') return 1;
+            return 0;
+        });
+        
+        // Add sorted tags to HTML
+        allTags.forEach(tag => {
+            html += tag.html;
+        });
+        
         // Single add button with dropdown
         html += '<div class="add-tag-dropdown">';
         html += '<button class="add-tag-main" onclick="toggleAddDropdown()">+</button>';
@@ -401,10 +468,25 @@ function confirmAddTag() {
         const newTag = document.createElement('div');
         newTag.className = `compact-tag ${currentAddType}-tag`;
         newTag.dataset.type = currentAddType;
-        newTag.innerHTML = `
+        
+        let tagContent = `
             <span class="tag-text" contenteditable="true">${value}</span>
             <button class="remove-tag" onclick="removeTag(this)">×</button>
         `;
+        
+        // Для навыков добавляем баллы по умолчанию
+        if (currentAddType === 'skill') {
+            const defaultScore = 3; // Средний балл по умолчанию
+            newTag.classList.add('optional'); // Новые навыки по умолчанию необязательные
+            newTag.dataset.score = defaultScore;
+            tagContent = `
+                <span class="tag-text" contenteditable="true">${value}</span>
+                <span class="skill-score" onclick="editScore(this, -1)">${defaultScore}</span>
+                <button class="remove-tag" onclick="removeTag(this)">×</button>
+            `;
+        }
+        
+        newTag.innerHTML = tagContent;
         
         // Insert before the add button
         tagsRow.insertBefore(newTag, addDropdown);
@@ -486,6 +568,23 @@ function clearAllTags() {
 function toggleRawResponse() {
     const rawContent = document.querySelector('.raw-content');
     rawContent.style.display = rawContent.style.display === 'none' ? 'block' : 'none';
+}
+
+// Функция для редактирования баллов навыков
+function editScore(scoreElement, index) {
+    const currentScore = parseInt(scoreElement.textContent);
+    const newScore = prompt(`Введите новый балл важности (1-5):`, currentScore);
+    
+    if (newScore !== null && !isNaN(newScore) && newScore >= 1 && newScore <= 5) {
+        const intScore = parseInt(newScore);
+        scoreElement.textContent = intScore;
+        
+        // Обновляем data-score атрибут родительского элемента
+        const tagElement = scoreElement.closest('.compact-tag');
+        tagElement.setAttribute('data-score', intScore);
+        
+        console.log(`Балл навыка обновлен на ${intScore}`);
+    }
 }
 
 // Initialize everything when DOM is loaded

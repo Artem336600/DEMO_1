@@ -71,12 +71,14 @@ def register_step3():
         if purpose == 'find_people':
             step3_data = {
                 'project_description': request.form.get('project_description'),
-                'looking_for': request.form.get('looking_for')
+                'looking_for': request.form.get('looking_for'),
+                'required_skills': request.form.get('required_skills')
             }
         elif purpose == 'join_project':
             step3_data = {
                 'what_to_do': request.form.get('what_to_do'),
                 'interests': request.form.get('interests'),
+                'my_skills': request.form.get('my_skills'),
                 'time_commitment': request.form.getlist('time_commitment')
             }
         elif purpose == 'expand_network':
@@ -128,3 +130,39 @@ def register_step4():
             return render_template('auth/register_step4.html')
     
     return render_template('auth/register_step4.html') 
+
+@auth.route('/admin/analytics')
+def admin_analytics():
+    """Простая админ-панель для просмотра аналитики пользовательского ввода"""
+    try:
+        # Получение статистики
+        stats = db.get_user_input_statistics()
+        
+        # Получение популярных навыков
+        popular_skills = db.get_popular_skills(limit=30)
+        skills_by_context = {
+            'looking_for': db.get_skills_by_context('looking_for', 20),
+            'what_to_do': db.get_skills_by_context('what_to_do', 20),
+            'interests': db.get_skills_by_context('interests', 20),
+            'required_skills': db.get_skills_by_context('required_skills', 20),
+            'my_skills': db.get_skills_by_context('my_skills', 20)
+        }
+        
+        # Получение популярных тем
+        popular_topics = db.get_popular_topics(limit=20)
+        
+        # Получение последних описаний
+        recent_projects = db.get_project_descriptions_analysis(limit=10)
+        recent_about = db.get_about_descriptions_analysis(limit=10)
+        
+        return render_template('admin/analytics.html', 
+                             stats=stats,
+                             popular_skills=popular_skills,
+                             skills_by_context=skills_by_context,
+                             popular_topics=popular_topics,
+                             recent_projects=recent_projects,
+                             recent_about=recent_about)
+        
+    except Exception as e:
+        flash(f'Ошибка при загрузке аналитики: {str(e)}', 'error')
+        return redirect(url_for('index')) 
